@@ -1,8 +1,8 @@
 <!--
 Filename: TODO.md
-Revision: 1.8.5
+Revision: 1.9.0
 Description: Future development backlog for HumidorHQ.
-Modified Date: 2026-07-20 09:00 ET
+Modified Date: 2026-07-20 21:00 ET
 -->
 
 # TODO
@@ -16,4 +16,7 @@ Future development items for HumidorHQ.
    - Evaluate partial-event corrections only if a real workflow requires them; current correction intentionally reverses the complete immutable event before replacement.
    - Add a guarded found-inventory workflow only if physical counting reveals cigars with no existing positive Lot/location balance; current count reconciliation intentionally requires established provenance.
 
-2. Define an off-server backup retention schedule after production backup/restore verification.
+2. Complete the off-server backup phase after production verification of automatic daily login backups.
+   - Define an encrypted off-server destination and retention schedule.
+   - Add backup-age and last-failure status to the Backup & Restore page.
+   - Add periodic restore verification against an isolated runtime data root.
