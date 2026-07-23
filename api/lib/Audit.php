@@ -2,9 +2,9 @@
 declare(strict_types=1);
 /*
  * Filename: Audit.php
- * Revision: 1.2.0
- * Description: Audit logging helpers for the HumidorHQ flat-file app.
- * Modified Date: 2026-07-17 17:30 ET
+ * Revision: 1.3.0
+ * Description: Audit logging helpers and successful-login backup trigger for the HumidorHQ flat-file app.
+ * Modified Date: 2026-07-20 21:00 ET
  */
 
 function audit_log_path(): string
@@ -33,11 +33,13 @@ function audit_record(string $page, string $action, array $details = []): void
 {
     $user = current_auth_user();
     $username = is_array($user) ? (string) ($user['username'] ?? 'unknown') : 'anonymous';
+    $normalizedPage = trim($page) !== '' ? trim($page) : 'Unknown';
+    $normalizedAction = trim($action) !== '' ? trim($action) : 'unknown';
     $record = [
         'dateTime' => audit_datetime_et(),
         'user' => $username,
-        'page' => trim($page) !== '' ? trim($page) : 'Unknown',
-        'action' => trim($action) !== '' ? trim($action) : 'unknown',
+        'page' => $normalizedPage,
+        'action' => $normalizedAction,
     ];
 
     if ($details !== []) {
@@ -48,6 +50,14 @@ function audit_record(string $page, string $action, array $details = []): void
         return;
     }
     write_audit_record($record);
+
+    // The login route records this event only after credentials were accepted and the
+    // authenticated session was established. Any user may therefore trigger the one
+    // backup allowed for the current application-local calendar day.
+    if ($normalizedPage === 'Authentication' && $normalizedAction === 'login') {
+        require_once API_ROOT . '/lib/services/AutomaticDailyLoginBackupService.php';
+        attempt_automatic_daily_login_backup();
+    }
 }
 
 function write_audit_record(array $record): void
